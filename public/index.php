@@ -1,4 +1,5 @@
 <?php
+use App\DataBase;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Factory\AppFactory;
@@ -15,6 +16,9 @@ $app = AppFactory::create();
 
 // Add Error Handling Middleware
 $app->addErrorMiddleware(true, false, false);
+
+$config = include_once __DIR__ . '/../config/database.php';
+$database = new DataBase($config['dsn'], $config['username'], $config['password']);
 
 // Add route callbacks
 $app->get('/', function (Request $request, Response $response, array $args) use ($twig) {
