@@ -1,0 +1,21 @@
+{% extends 'layout.twig.html' %}
+
+{% block body %}
+    <div class="container">
+        <h1>Login form</h1>
+
+        <form method="post" action="#">
+
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="text" name="email" class="form-control" id="email">
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" name="password" class="form-control" id="password">
+            </div>
+            <button type="submit" class="btn btn-primary">Login</button>
+
+        </form>
+    </div>
+{% endblock %}

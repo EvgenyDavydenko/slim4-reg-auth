@@ -23,6 +23,18 @@ $app->get('/', function (Request $request, Response $response, array $args) use 
     return $response;
 });
 
+$app->get('/login', function (Request $request, Response $response, array $args) use ($twig) {
+    $body = $twig->render('login.twig.html');
+    $response->getBody()->write($body);
+    return $response;
+});
+
+$app->get('/siginup', function (Request $request, Response $response, array $args) use ($twig) {
+    $body = $twig->render('siginup.twig.html');
+    $response->getBody()->write($body);
+    return $response;
+});
+
 $app->get('/{name}', function (Request $request, Response $response, array $args) use ($twig) {
     $name = $args['name'];
     $body = $twig->render('hello.twig.html', ['name' => $name]);
