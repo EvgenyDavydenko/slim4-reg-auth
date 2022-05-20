@@ -1,9 +1,11 @@
 <?php
 use App\DataBase;
+use App\Session;
 use App\Authorization;
 use App\AuthorizationException;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
+use Psr\Http\Server\RequestHandlerInterface as Handler;
 use Slim\Factory\AppFactory;
 use Twig\Environment;
 use Twig\Loader\FilesystemLoader;
@@ -18,6 +20,15 @@ $app = AppFactory::create();
 
 // Add Error Handling Middleware
 $app->addErrorMiddleware(true, false, false);
+
+$session = new Session();
+$sessionMiddleware = function (Request $request, Handler $handler) use ($session) {
+    $session->start();
+    $response = $handler->handle($request);
+    $session->save();
+    return $response;
+};
+$app->add($sessionMiddleware);
 
 $config = include_once __DIR__ . '/../config/database.php';
 $database = new DataBase($config['dsn'], $config['username'], $config['password']);
@@ -37,13 +48,16 @@ $app->get('/login', function (Request $request, Response $response, array $args)
     return $response;
 });
 
-$app->get('/siginup', function (Request $request, Response $response, array $args) use ($twig) {
-    $body = $twig->render('siginup.twig.html');
+$app->get('/siginup', function (Request $request, Response $response, array $args) use ($twig, $session) {
+    $body = $twig->render('siginup.twig.html', [
+        'message' => $session->flush('message'),
+        'form' => $session->flush('form')
+    ]);
     $response->getBody()->write($body);
     return $response;
 });
 
-$app->post('/siginup', function (Request $request, Response $response) use ($authorization) {
+$app->post('/siginup', function (Request $request, Response $response) use ($authorization, $session) {
 
     //fetch from $_POST
     $params = (array)$request->getParsedBody();
@@ -52,6 +66,8 @@ $app->post('/siginup', function (Request $request, Response $response) use ($aut
     try {
         $authorization->siginup($params);
     }catch (AuthorizationException $exception){
+        $session->setData('message', $exception->getMessage());
+        $session->setData('form', $params);
         return $response->withHeader('Location', '/siginup')->withStatus(302);
     }
     return $response->withHeader('Location', '/')->withStatus(302);
